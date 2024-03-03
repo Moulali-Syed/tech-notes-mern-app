@@ -1,0 +1,113 @@
+REST API is an interface that provides communication between frontend and backend
+
+CRUD
+create - post
+read - get 
+update - patch/put
+delete - delete
+
+MERN - 
+MongoDB
+ExpressJs
+ReactJs
+NodeJs
+
+Lets build a techNotes app 
+
+gather user stories
+
+In formal jobs we might have 
+As a [person] , I [need/want] to [do something] because [reason given] - or similar
+
+1.Replace current sticky note system 
+2.Add a public facing page with basic contact info 
+3.Add an employee login to the notes app
+4.Provide a welcome page after login 
+5.Provide easy navigation
+6.display current user and assigned role
+7.provide a logout option
+8.require users to login at least once per week
+9.provide a way to remove employee access asap if needed
+10.Notes are assigned to specific employees
+11.Notes have a ticket id,title,note body, created and updated dates
+12.Notes are either open or completed
+13.Users can be Employees , Managers or Admins
+14.Notes can only be deleted by Managers or Admins
+15.Anyone can create a note(when customer checks-in)
+16.employees can only view and edit their assigned notes
+17.Managers and Admins can view,edit and delete all notes
+18.Only Managers and Admins can access user Settings
+19.Only Managers and Admins can
+create new users 
+20.Desktop mode is most important but should be available in mobile 
+
+create a markdown file with .md extension
+this helps in creating a readme as we have in github
+use an extension and then press ctrl+shift+v to preview in vs code 
+
+-------------------------------------------------------------
+
+Lets start with backend 
+
+npm init -y 
+npm i express
+npm i nodemon -D  (a development dependency)
+
+go to package.json
+    add scripts
+        start - node server
+        dev - nodemon server 
+
+create a .gitignore file , add node_modules
+
+create a server.js file 
+
+const express = require('express');
+const app = express();
+const PORT = process.env.PORT || 3500;
+
+app.listen(PORT,function(){
+    console.log(`server is running on PORT ${PORT}`)
+})
+
+#
+inside server.js file 
+import path module 
+say app to use the public folder , to serve static files 
+
+const path = require("path");
+app.use('/',express.static(path.join(__dirname,'public')));
+
+#
+create a public folder,inside create a css folder with file
+style.css 
+
+#
+create routes folder , with root.js file 
+create views folder, with index.html, 404.html files
+
+root.js 
+const express = require('express');
+const router = express.Router();
+const path = require('path');
+
+router.get('^/$|/index(.html)?', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'views', 'index.html'));
+});
+
+module.exports = router;
+
+
+#
+in server.js 
+
+app.all('*', (req, res) => {
+  res.status(404);
+  if (req.accepts('html')) {
+    res.sendFile(path.join(__dirname, 'views', '404.html'));
+  } else if (req.accepts('json')) {
+    res.json({ message: '404 Not Found' });
+  } else {
+    res.type('txt').send('404 Not Found');
+  }
+});
