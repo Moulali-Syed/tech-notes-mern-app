@@ -1,0 +1,175 @@
+Chapter2: Middleware
+
+HTTP Request -> Middleware Functions -> API Response 
+
+Middleware are Functions that are placed in the path of HTTP 
+request before our backend API sends a Response
+
+
+Middleware Adds:
+    1.Additional functionality for the API
+    2.Preliminary request processing 
+
+  
+
+Middleware Types
+    - Built-in middleware
+    - Custom middleware
+    - 3rd Party middleware
+
+
+BuiltIn Middleware: 
+
+app.use('/', express.static(path.join(__dirname, 'public')));
+
+express.static is a built in middleware , that tells us from where to grab the static files
+
+this can be also written as below 
+
+app.use(express.static('public'));
+
+---------------------------------------------------------------
+We want the ability to process json , we have a built in middleware for that 
+
+app.use(express.json());
+
+---------------------------------------------------------------
+
+Custom Middleware:
+
+create a logs folder 
+create a middleware folder 
+
+install  dependencies
+    npm i date-fns uuid
+
+
+inside middleware folder,create a file logger.js 
+
+###
+const { format } = require('date-fns');
+const { v4: uuid } = require('uuid');
+
+const fs = require('fs');
+const fsPromises = require('fs').promises;
+
+const path = require('path');
+
+const logEvents = async (message, logFileName) => {
+  const dateTime = format(new Date(), 'yyyyMMdd\tHH:mm:ss');
+
+  const logItem = `${dateTime}\t${uuid()}\t${message}\n`;
+
+  try {
+    if (!fs.existsSync(path.join(__dirname, '..', 'logs'))) {
+      await fsPromises.mkdir(path.join(__dirname, '..', 'logs'));
+    }
+
+    await fsPromises.appendFile(
+      path.join(__dirname, '..', 'logs', logFileName),
+      logItem
+    );
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const logger = (req, res, next) => {
+  logEvents(`${req.method}\t${req.url}\t${req.headers.origin}`, 'reqLog.log');
+  console.log(`${req.method} ${req.path}`);
+  next();
+};
+
+module.exports = { logEvents, logger };
+
+--
+go to server.js 
+const {logger} = require('./middleware/logger');
+app.use(logger);
+
+###
+Lets create one more custom middleware, create a file 
+errorHandler.js 
+
+const { logEvents } = require('./logger');
+
+const errorHandler = (err, req, res, next) => {
+  logEvents(
+    `${err.name}: ${err.message}\t${req.method}\t${req.url}\t${req.headers.origin}`,
+    'errorLog.log'
+  );
+  console.log(err.stack);
+  const status = res.statusCode ? res.statusCode : 500;
+  res.status(status);
+  res.json({ message: err.message });
+};
+
+module.exports = errorHandler;
+
+---
+in server.js , use the errorHandler middleware just before u listen to app 
+
+app.use(errorHandler);
+
+---------------------------------------------------------------
+Third Party Middleware:
+
+###
+npm i cookie-parser
+
+in server.js add middleware
+
+const cookieParser = require('cookie-parser');
+app.use(cookieParser());
+
+###
+go and check in browser console ,
+fetch('http://localhost:3500')
+
+we will get error , CORS 
+Cross Origin Resource Sharing 
+
+we have to enable cors 
+
+npm i cors 
+
+in server.js 
+
+const cors = require('cors');
+app.use(cors());
+
+we want to allow requests only from origins that we want to access our apis 
+we can do that using cors options 
+
+create a config folder 
+
+with 2 files 
+
+ - allowedOrigins.js 
+
+const allowedOrigins = ['http://localhost:3000', 'https://www.randomurl.com'];
+
+module.exports = allowedOrigins;
+
+ - corsOptions.js 
+
+const allowedOrigins = require('./allowedOrigins');
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  optionsSuccessStatus: 200,
+};
+
+module.exports = corsOptions;
+
+---
+now go to server.js 
+
+app.use(cors(corsOptions));
