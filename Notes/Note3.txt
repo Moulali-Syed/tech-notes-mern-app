@@ -1,0 +1,175 @@
+MongoDB - is a NoSQL database , built with collections of documents
+
+to use env variables inside rest api , install dotenv package
+
+npm i dotenv 
+
+in server.js , add first line 
+require('dotenv').config();
+
+create a .env file 
+
+add it in .gitignore 
+
+----------------------------------------------------------------
+Now lets start creating a mongodb cluster 
+
+go to mongodb atlas
+login 
+click on leaf icon on top right, it takes to projects 
+click on New Project button 
+Name Your Project:  MongoTuts 
+Click on Next
+Click on Create Project 
+Click on Database(SideNavbar)
+Click on Build a Database
+Select M0 Free Database 
+Leave everything as default
+Click Create 
+copy username 
+**namehere** 
+and password
+**password**
+Click on Create User 
+To make our MongoDB cluster accessible on any ipaddress ,
+add the ip as 0.0.0.0/0
+Click on Add Entry
+Click on Finish and Close 
+Go to Overview
+Click on Connect 
+Select Compass
+copy the connection string 
+mongodb+srv://<username>:<password>@cluster0.yplwna5.mongodb.net/
+
+Click on DataServices
+Collections 
+Add My own data 
+Database Name: techNotesDB
+collectionName: users 
+click create 
+
+
+in .env file add DATABASE_URI 
+
+----------------------------------------------------------------
+npm i mongoose 
+
+create a folder  -> models
+
+inside models create a file -> User.js
+
+const mongoose = require('mongoose');
+
+const userSchema = new mongoose.Schema({
+  username: {
+    type: String,
+    required: true,
+  },
+  password: {
+    type: String,
+    required: true,
+  },
+  roles: [
+    {
+      type: String,
+      default: 'Employee',
+    },
+  ],
+  active: {
+    type: Boolean,
+    default: true,
+  },
+});
+
+module.exports = mongoose.model('User', userSchema);
+
+
+----
+
+create Note.js 
+
+install a package to get sequence of numbers for our tickets
+
+npm i mongoose-sequence
+
+const mongoose = require('mongoose');
+const AutoIncrement = require('mongoose-sequence')(mongoose);
+
+const noteSchema = new mongoose.Schema(
+  {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
+    title: {
+      type: String,
+      required: true,
+    },
+    text: {
+      type: String,
+      required: true,
+    },
+    completed: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  { timestamps: true }
+);
+
+noteSchema.plugin(AutoIncrement, {
+  inc_field: 'ticket',
+  id: 'ticketNums',
+  start_seq: 500,
+});
+
+module.exports = mongoose.model('Note', noteSchema);
+
+
+we are adding plugin to the noteSchema, so that we can get the ticket number in sequence
+
+--------------------------------------------------------------
+
+Lets create a file inside config folder 
+
+dbConnect.js
+
+const mongoose = require('mongoose');
+
+const connectDB = async () => {
+  try {
+    await mongoose.connect(process.env.DB_URI);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+module.exports = connectDB;
+
+----------------------------------------------------------------
+
+go to server.js 
+
+const connectDB = require('./config/dbConnect');
+const mongoose = require('mongoose');
+
+connectDB();
+
+
+mongoose.connection.once('open', () => {
+  console.log('connected to MongoDB');
+
+  app.listen(PORT, function () {
+    console.log(`server running on port ${PORT}`);
+  });
+});
+
+mongoose.connection.on('error', (err) => {
+  console.log(err);
+  logEvents(
+    `${err.no}: ${err.code}\t${err.syscall}\t${err.hostname}`,
+    'mongoErrLog.log'
+  );
+});
+
