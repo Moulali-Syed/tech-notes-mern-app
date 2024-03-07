@@ -1,0 +1,298 @@
+Create a react app 
+    npm create vite@latest 
+
+-----
+npm i react-router-dom
+
+go to main.jsx 
+
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App.jsx';
+import './index.css';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<App />} />
+      </Routes>
+    </BrowserRouter>
+  </React.StrictMode>
+);
+
+-----
+Create components folder  inside src folder 
+
+components/Layout.jsx 
+
+import { Outlet } from 'react-router-dom';
+const Layout = () => {
+  return <Outlet />;
+};
+export default Layout;
+
+This component can help us to insert any data 
+we want to 
+
+-----
+go to App.jsx 
+
+import { Routes, Route } from 'react-router-dom';
+import Layout from './components/Layout';
+function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<Layout />}></Route>
+    </Routes>
+  );
+}
+
+export default App;
+
+-----
+go to components folder,create a component Public.jsx 
+
+import { Link } from 'react-router-dom';
+const Public = () => {
+  return (
+    <section className="public">
+      <header>
+        <h1>
+          Welcome to <span className="nowrap">Dan D. Repairs!</span>
+        </h1>
+      </header>
+      <main className="public__main">
+        <p>
+          Located in Beautiful Downtown Foo City, Dan D. Repairs provides a
+          trained staff ready to meet your tech repair needs.
+        </p>
+        <address className="public__addr">
+          Dan D. Repairs
+          <br />
+          555 Foo Drive
+          <br />
+          Foo City, CA 12345
+          <br />
+          <a href="tel:+15555555555">(555) 555-5555</a>
+        </address>
+        <br />
+        <p>Owner: Dan Davidson</p>
+      </main>
+      <footer>
+        <Link to="/login">Employee Login</Link>
+      </footer>
+    </section>
+  );
+};
+export default Public;
+
+
+-----
+Login.jsx 
+ 
+const Login = () => {
+  return <h1>Login</h1>;
+};
+export default Login;
+
+-----
+DashLayout.jsx 
+
+import { Outlet } from 'react-router-dom';
+
+const DashLayout = () => {
+  return (
+    <>
+      <div className="dash-container">
+        <Outlet />
+      </div>
+    </>
+  );
+};
+export default DashLayout;
+
+----
+DashHeader.jsx 
+
+import { Link } from 'react-router-dom';
+
+const DashHeader = () => {
+  return (
+    <header className="dash-header">
+      <div className="dash-header__container">
+        <Link to="/dash/notes">
+          <h1 className="dash-header__title">techNotes</h1>
+        </Link>
+        <nav className="dash-header__nav">{/* add nav buttons */}</nav>
+      </div>
+    </header>
+  );
+};
+export default DashHeader;
+
+-----
+Then install packages 
+  npm i @fortawesome/fontawesome-svg-core @fortawesome/free-solid-svg-icons @fortawesome/react-fontawesome
+
+  
+Then create DashFooter.jsx 
+
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faHouse } from '@fortawesome/free-solid-svg-icons';
+
+import { useNavigate, useLocation } from 'react-router-dom';
+
+const DashFooter = () => {
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
+
+  const onGoHomeClicked = () => {
+    navigate('/dash');
+  };
+  let goHomeButton = null;
+  if (pathname !== '/dash') {
+    goHomeButton = (
+      <button
+        className="dash-footer__button icon-button"
+        title="Home"
+        onClick={onGoHomeClicked}
+      >
+        <FontAwesomeIcon icon={faHouse} />
+      </button>
+    );
+  }
+  return (
+    <footer className="dash-footer">
+      {goHomeButton}
+      <p>Current User:</p>
+      <p>Status:</p>
+    </footer>
+  );
+};
+export default DashFooter;
+
+------
+
+App.jsx 
+
+import { Routes, Route } from 'react-router-dom';
+import Layout from './components/Layout';
+import Public from './components/Public';
+import Login from './features/auth/Login';
+import DashLayout from './components/DashLayout';
+function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<Layout />}>
+        <Route index element={<Public />} />
+        <Route path="login" element={<Login />} />
+        <Route path="dash" element={<DashLayout />} />
+      </Route>
+    </Routes>
+  );
+}
+
+export default App;
+
+-------------------------------------------------
+create a features folder,inside it create  a Auth folder 
+inside Auth folder, create Login.jsx and Welcome.jsx 
+
+import { Link } from 'react-router-dom';
+
+const Welcome = () => {
+  const date = new Date();
+  const today = new Intl.DateTimeFormat('en-US', {
+    dateStyle: 'full',
+    timeStyle: 'long',
+  }).format(date);
+
+  return (
+    <section className="welcome">
+      <p>{today}</p>
+      <h1>Welcome!</h1>
+      <p>
+        <Link to="/dash/notes">View techNotes</Link>
+      </p>
+      <p>
+        <Link to="/dash/users">View User Settings</Link>
+      </p>
+    </section>
+  );
+};
+export default Welcome;
+
+-----
+in App.jsx , add it as child route 
+
+import { Routes, Route } from 'react-router-dom';
+import Layout from './components/Layout';
+import Public from './components/Public';
+import Login from './features/auth/Login';
+import DashLayout from './components/DashLayout';
+import Welcome from './features/auth/Welcome';
+function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<Layout />}>
+        <Route index element={<Public />} />
+        <Route path="login" element={<Login />} />
+        <Route path="dash" element={<DashLayout />}>
+          <Route index element={<Welcome />} />
+        </Route>
+      </Route>
+    </Routes>
+  );
+}
+
+export default App;
+
+-----------------------------------------------------------
+inside features folder, create notes and users folder 
+
+notes/NotesList.jsx 
+users/UsersList.jsx
+
+const NotesList = () => {
+  return <h1>NotesList</h1>;
+};
+export default NotesList;
+
+---
+const UsersList = () => {
+  return <h1>UsersList</h1>;
+};
+export default UsersList;
+---
+App.jsx 
+
+import { Routes, Route } from 'react-router-dom';
+import Layout from './components/Layout';
+import Public from './components/Public';
+import Login from './features/auth/Login';
+import DashLayout from './components/DashLayout';
+import Welcome from './features/auth/Welcome';
+import NotesList from './features/notes/NotesList';
+import UsersList from './features/users/UsersList';
+function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<Layout />}>
+        <Route index element={<Public />} />
+        <Route path="login" element={<Login />} />
+        <Route path="dash" element={<DashLayout />}>
+          <Route index element={<Welcome />} />
+          <Route path="notes">
+            <Route index element={<NotesList />} />
+          </Route>
+          <Route path="users">
+            <Route index element={<UsersList />} />
+          </Route>
+        </Route>
+      </Route>
+    </Routes>
+  );
+}
+
+export default App;
